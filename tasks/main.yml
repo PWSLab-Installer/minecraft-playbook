@@ -44,7 +44,7 @@
     -   name: Fetch mcrcon
         git:
             repo: https://github.com/Tiiffi/mcrcon.git
-            dest: ~/tools
+            dest: ~/tools/mcrcon
         become: yes
         become_user: minecraft
 
