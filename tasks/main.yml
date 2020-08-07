@@ -18,7 +18,7 @@
             - os_check.stdout | regex_search("CentOS")
 
     -   name: Install Build tools - CentOS
-        shell: yum group install "Development Tools"
+        shell: yum group install -y "Development Tools"
         when: 
             - os_check.stdout | regex_search("CentOS")
 
