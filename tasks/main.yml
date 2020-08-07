@@ -62,6 +62,13 @@
         become: yes
         become_user: minecraft
 
+     -   name: Execute Java
+        shell: java -Xmx1024M -Xms512M -jar server.jar nogui
+        args:
+            chdir: ~/server
+        become: yes
+        become_user: minecraft
+
     -   name: Accept EULA
         lineinfile:
             dest: ~/server/eula.txt
