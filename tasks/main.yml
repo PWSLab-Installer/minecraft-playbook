@@ -62,7 +62,7 @@
         become: yes
         become_user: minecraft
 
-    -  name: Execute Java
+    -   name: Execute Java
         shell: java -Xmx1024M -Xms512M -jar server.jar nogui
         args:
             chdir: ~/server
