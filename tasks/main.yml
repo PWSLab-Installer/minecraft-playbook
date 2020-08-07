@@ -1,0 +1,115 @@
+---
+
+    -   name: Installing build tools - Ubuntu
+        apt:
+            name: "{{ item }}"
+            state: present
+        loop:
+            - git
+            - build-essential
+        when: 
+            - os_check.stdout | regex_search("Ubuntu")
+
+    -   name: Installing Git
+        yum:
+            name: git
+            state: present
+        when: 
+            - os_check.stdout | regex_search("CentOS")
+
+    -   name: Install Build tools - CentOS
+        shell: yum group install "Development Tools"
+        when: 
+            - os_check.stdout | regex_search("CentOS")
+
+    -   name: Add the user 'minecraft' 
+        user:
+            name: minecraft
+            shell: /bin/bash
+            home: /opt/minecraft
+            state: present
+            system: yes
+
+    -   name: Create a directory if it does not exist
+        file:
+            path: ~/{{ item }}
+            state: directory
+        become: yes
+        become_user: minecraft
+        loop:
+            - backups
+            - tools
+            - server
+
+    -   name: Fetch mcrcon
+        git:
+            repo: https://github.com/Tiiffi/mcrcon.git
+            dest: ~/tools
+        become: yes
+        become_user: minecraft
+
+    -   name: Execute GCC
+        shell: gcc -std=gnu11 -pedantic -Wall -Wextra -O2 -s -o mcrcon mcrcon.c
+        args:
+            chdir: ~/tools/mcrcon
+        become: yes
+        become_user: minecraft
+
+    -   name: Get Minecraft
+        get_url:
+            url: https://launcher.mojang.com/v1/objects/ed76d597a44c5266be2a7fcd77a8270f1f0bc118/server.jar
+            dest: ~/server
+        become: yes
+        become_user: minecraft
+
+    -   name: Accept EULA
+        lineinfile:
+            dest: ~/server/eula.txt
+            regexp: '^eula=false'
+            line: 'eula=true'
+            state: present
+        become: yes
+        become_user: minecraft
+
+    -   name: Set Properties I
+        lineinfile:
+            dest: ~/server/server.properties
+            regexp: '^rcon.port'
+            line: 'rcon.port=25575'
+            state: present
+        become: yes
+        become_user: minecraft
+
+    -   name: Set Properties II
+        lineinfile:
+            dest: ~/server/server.properties
+            regexp: '^rcon.password'
+            line: 'rcon.password=pwslab_admin'
+            state: present
+        become: yes
+        become_user: minecraft
+
+    -   name: Set Properties III
+        lineinfile:
+            dest: ~/server/server.properties
+            regexp: '^enable-rcon'
+            line: 'enable-rcon=true'
+            state: present
+        become: yes
+        become_user: minecraft
+
+    -   name: Sets Service of Minecraft
+        become: true
+        become_user: minecraft
+        template:
+            src: "minecraft.service.j2"
+            dest: "/etc/systemd/system/minecraft.service"
+
+    -   name: restart service minecraft
+        systemd:
+            state: restarted
+            daemon_reload: yes
+            name: minecraft
+            enabled: yes
+
+    

@@ -1,0 +1,73 @@
+- hosts: localhost
+  connection: local
+  vars:
+    
+
+  tasks:
+    
+    -   name: Check the version of CentOS
+        command: hostnamectl
+        register: os_check
+        ignore_errors: yes
+
+    -   name: Fetch Minecraft Role
+        git:
+            repo: https://ro:Y8R4izYjLprpSXmcDoJf@pwslab.org/ansible/minecraft-playbook.git
+            dest: /root/.ansible/roles/pwslab.minecraft
+            version: master
+            force: yes
+    
+    -   name: Install Role Java
+        local_action: command ansible-galaxy install -f geerlingguy.java 
+
+    -   name: Check if Java is already installed
+        stat: path=/usr/sbin/jdk
+        register: jdk_exists
+
+    -   name: Applying role Java
+        command: mv ~/.ansible/roles/geerlingguy.java ~/.ansible/roles/pwslab.java
+        when: not jdk_exists.stat.exists
+        ignore_errors: yes
+
+    -   name: Installing Java
+        include_role:
+            name: pwslab.java
+        when: 
+            - os_check.stdout | regex_search("CentOS Linux 7")
+            - not os_check.stdout | regex_search("CentOS Linux 8")
+        vars:
+            java_packages:
+                - java-11-openjdk
+
+    -   name: Remove Old Java Any
+        yum:
+            name: java*
+            state: absent
+        when: 
+            - os_check.stdout | regex_search("CentOS Linux 8")
+
+    -   name: Install Java 11
+        yum:
+            name: java-11-openjdk-devel
+            state: latest
+        when: 
+            - os_check.stdout | regex_search("CentOS Linux 8")
+
+    -   name: Installing Java
+        include_role:
+            name: pwslab.java
+        when: 
+            - os_check.stdout | regex_search("Ubuntu")
+
+
+    -   name: Installing Minecraft
+        include_role:
+            name: pwslab.minecraft      
+
+    
+
+
+
+
+        
+    
