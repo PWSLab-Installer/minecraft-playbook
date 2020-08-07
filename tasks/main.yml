@@ -106,8 +106,6 @@
         become_user: minecraft
 
     -   name: Sets Service of Minecraft
-        become: true
-        become_user: minecraft
         template:
             src: "minecraft.service.j2"
             dest: "/etc/systemd/system/minecraft.service"
